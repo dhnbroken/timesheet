@@ -1,0 +1,35 @@
+.sidebar__menu {
+    position: relative;
+    overflow-y: auto;
+    height: 90vh;
+
+    .menu-list {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+
+        .menu-items { 
+            display: inline-flex;
+            vertical-align: middle;
+            width: 100%;
+            margin: 0;
+            padding: 12px 13px;
+
+            .item {
+                width: 100%;
+                text-decoration: none;
+                font-weight: 700;
+                color: #333;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+
+                .item-title {
+                    margin-left: 12px;
+                    margin-top: 7px;
+                    margin-bottom: 7px;
+                }
+            }
+        }
+    }
+}

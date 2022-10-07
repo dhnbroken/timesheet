@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-size: 14px;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+hr {
+  height: 0;
+  box-sizing: content-box;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.table tbody tr td, .table tbody tr th {
+  vertical-align: middle;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+table {
+  width: 100%;
+}
+
+th {
+  padding: 0;
+}
+
+a, button {
+  border: none;
+  outline: none;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+button { 
+  background-color: #ffffff;
+}
+.flex {
+  display: flex;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+}
+.flex-justify-center {
+  display: flex;
+  justify-content: center;
+}
+.flex-end {
+  display: flex;
+  justify-content: flex-end;
+}
+.flex-around {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.gap-7 {
+  gap: 7px;
+}
+.modal {
+  width: 100%;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.logo {
+  float: left;
+  margin-left: -15px;
+  padding: 15px;
+  font-size: 18px;
+  line-height: 30px;
+  text-decoration: none;
+  color: #fff5f4;
+  background-color: transparent;
+  cursor: pointer;
+}
+.cancel-button {
+  color: #555;
+}
+.btn {
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  display: block;
+  position: relative;
+  padding: 12px;
+  border: 1px solid #c1c1c1;
+  width: 100%;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px 0 rgb(0 0 0 / 14%), 0 1px 5px 0 rgb(0 0 0 / 12%);
+}
+
+.btn-active {
+  color: white;
+  background-color: #f36c00;
+}
+
+.tab-view {
+  overflow-x: auto;
+}
+.swal2-styled.swal2-cancel {
+  color: #555 !important;
+  font-weight: 700 !important;
+}
+.swal2-styled.swal2-confirm {
+  font-weight: 600 !important;
+}
