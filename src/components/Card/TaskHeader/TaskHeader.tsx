@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './TaskHeader.module.scss';
 import { MoreVert, Add, Refresh, Search } from '@mui/icons-material';
 import { Grid, Button, Menu, MenuItem, InputAdornment, TextField, Box, SelectChangeEvent, FormControl, Select, Modal } from '@mui/material';
 import EditModal from 'src/components/Modal/Edit/EditModal';
-import { IQuantityProject } from 'src/store/interface';
 import { GlobalContextProvider } from 'src/Context/GlobalContext';
+import { initEditState } from 'src/store/constants';
+import { ProjectStatus } from 'src/store/enum/Project';
 
 const cx = classNames.bind(styles);
 
@@ -24,39 +25,45 @@ const editStyle = {
   p: 3
 };
 
-interface Props {
-  quantity: IQuantityProject[]
-}
+const TaskHeader: React.FC = () => {
+  const { projectStatus, setProjectStatus, getMemberProject, getTasks, setQuery, quantity, editInfo, setEditInfo, setIsChange, isChange, setTitle } = useContext(GlobalContextProvider);
 
-const TaskHeader: React.FC<Props> = (props) => {
-  const { quantity } = props;
-  const { state } = React.useContext(GlobalContextProvider);
+  const allProject = useMemo(() => quantity.reduce((previousValue, currentValue) => previousValue + currentValue.quantity, 0), [quantity]);
 
-  const allProjects = state.tasks.length;
-
-  const [projectStatus, setProjectStatus] = React.useState('');
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [openEdit, setOpenEdit] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   const open = Boolean(anchorEl);
 
-  const handleOpenEdit = (): void => setOpenEdit(true);
-  const handleCloseEdit = (): void => setOpenEdit(false);
+  const handleOpenEdit = (): void => {
+    setOpenEdit(true);
+    getMemberProject();
+    getTasks();
+    setEditInfo(initEditState);
+    setTitle('Create Project: ');
+    delete editInfo.id;
+  };
 
   const handleChange = (event: SelectChangeEvent): void => {
     setProjectStatus(event.target.value);
   };
-  const handleClick = (event: React.MouseEvent<HTMLElement>): void => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = (): void => {
+  const handleRefresh = (): void => {
     setAnchorEl(null);
+    setQuery('');
+    setInputValue('');
+    setIsChange(!isChange);
+  };
+  const handleSearchEnter = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.code === 'Enter' && inputValue) {
+      setQuery(inputValue);
+    }
   };
   return (
     <React.Fragment>
       <div className={cx('card__header')}>
         <h2 className={cx('card__header-title')}>Manage Projects</h2>
-        <div className={cx('card__header-btn')} onClick={handleClick}>
+        <div className={cx('card__header-btn')} onClick={(e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)}>
           <MoreVert />
         </div>
         <Menu
@@ -64,7 +71,7 @@ const TaskHeader: React.FC<Props> = (props) => {
           anchorReference="anchorPosition"
           anchorPosition={{ top: 150, left: 1400 }}
           open={open}
-          onClose={handleClose}
+          onClose={() => setAnchorEl(null)}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'left'
@@ -74,15 +81,15 @@ const TaskHeader: React.FC<Props> = (props) => {
             horizontal: 'center'
           }}
         >
-          <MenuItem sx={{ fontSize: '14px', px: '18px', py: '7px', width: '120px', bgcolor: 'inherit' }} onClick={handleClose}>
+          <MenuItem sx={{ fontSize: '14px', px: '18px', py: '7px', width: '120px', bgcolor: 'inherit' }} onClick={handleRefresh}>
             <Refresh sx={{ mr: '16px' }}/>
             <span>Refresh</span>
           </MenuItem>
         </Menu>
       </div>
       <div className={cx('card__header-actions')}>
-        <Grid container className={cx('header-actions')}>
-          <Grid xs={2} md={3} item={true}>
+        <Grid container className={cx('header-actions')} spacing={2}>
+          <Grid lg={3} md={12} item={true}>
             <div className={cx('add-project')}>
               <Button variant="contained" className={cx('add-project-btn')} size='large'>
                 <div className='modal flex-center' onClick={handleOpenEdit}>
@@ -90,45 +97,52 @@ const TaskHeader: React.FC<Props> = (props) => {
                   New Project
                 </div>
                 <Modal
+                  disableScrollLock={false}
                   open={openEdit}
-                  onClose={handleCloseEdit}
+                  onClose={() => {
+                    setOpenEdit(false);
+                    setEditInfo(initEditState);
+                  }}
                 >
                   <Box sx={editStyle}>
-                    <EditModal setOpenEdit={setOpenEdit}/>
+                    <EditModal setOpenEdit={setOpenEdit} />
                   </Box>
                 </Modal>
               </Button>
             </div>
           </Grid>
-          <Grid xs={2} md={3} item={true}>
+          <Grid lg={3} md={12} item={true}>
             <div className={cx('select-project')}>
               <FormControl fullWidth>
                 <Select
                   sx={{ fontSize: '14px', height: '50px' }}
-                  defaultValue= {`Active Project (${allProjects})`}
-                  value={projectStatus}
+                  displayEmpty
+                  value={projectStatus.toString()}
                   onChange={handleChange}
                   inputProps={{ 'aria-label': 'Without label' }}
                 >
                   {quantity.map((value, index) => (
-                    value.status === 1
-                      ? <MenuItem sx={{ fontSize: '14px' }} key={index} value={index}>Active Projects ({value.quantity})</MenuItem>
-                      : <MenuItem sx={{ fontSize: '14px' }} key={index} value={index}>Deactive Projects ({value.quantity})</MenuItem>
+                    value.status === ProjectStatus.ACTIVE
+                      ? <MenuItem sx={{ fontSize: '14px' }} value="" key={index} >Active Projects ({value.quantity})</MenuItem>
+                      : <MenuItem sx={{ fontSize: '14px' }} value={ProjectStatus.DEACTIVE} key={index} >Deactive Projects ({value.quantity})</MenuItem>
                   ))}
-                  <MenuItem sx={{ fontSize: '14px' }} value={3}>All Projects ({allProjects})</MenuItem>
+                  <MenuItem sx={{ fontSize: '14px' }} value={ProjectStatus.ALL}>All Projects ({allProject})</MenuItem>
                 </Select>
               </FormControl>
             </div>
           </Grid>
-          <Grid xs={8} md={6} item={true}>
+          <Grid lg={6} md={12} item={true}>
             <div className={cx('search-project')}>
               <Box width='100%'>
                 <TextField
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyUp={handleSearchEnter}
+                  value={inputValue}
                   size='small'
                   fullWidth
-                  id="input-with-icon-textfield"
                   label="Search by client or project name"
                   InputProps={{
+                    label: 'Search by client or project name',
                     sx: { padding: '5px 0' },
                     startAdornment: (
                       <InputAdornment position="start">

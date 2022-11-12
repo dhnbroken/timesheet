@@ -13,3 +13,9 @@
     box-shadow: 2px 2px 5px rgb(0 0 0 / 10%);
     z-index: 1;
 }
+
+@media (max-width: 900px) {
+    .sidebar {
+        display: none;
+    }
+}

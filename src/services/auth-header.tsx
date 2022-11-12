@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
 export function authHeader () {
   const userStr = localStorage.getItem('user');
   let user = {

@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './TaskList.module.scss';
 import EditModal from 'src/components/Modal/Edit';
 import ViewModal from 'src/components/Modal/View';
 import { ListItemIcon, ListItemText, MenuItem, Menu, Button, Box, Modal } from '@mui/material';
-import { Edit, ArrowDropDown, Visibility, Close, Delete } from '@mui/icons-material';
+import { Edit, ArrowDropDown, Visibility, Close, Delete, Check } from '@mui/icons-material';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'sweetalert2/src/sweetalert2.scss';
+import { GlobalContextProvider } from 'src/Context/GlobalContext';
+import { IProject } from 'src/store/interface/projectInterface';
+import { ITimeSheetReq } from 'src/store/interface/TimeSheet';
+import { ProjectStatus } from 'src/store/enum/Project';
+import moment from 'moment';
 
 const cx = classNames.bind(styles);
 
@@ -39,33 +44,68 @@ const viewStyle = {
   boxShadow: 24,
   p: 3
 };
+interface Props {
+  project: IProject
+}
+const TaskActions: React.FC<Props> = (props) => {
+  const { project } = props;
+  const {
+    state, setProjectInfo, getMemberProject, getTasks,
+    getEditTask, getTimeSheetTasks, getTimeSheetTeams,
+    setTitle, deleteTask, startDate, endDate,
+    activeProject, inactiveProject
+  } = useContext(GlobalContextProvider);
 
-const TaskActions: React.FC = () => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [openEdit, setOpenEdit] = React.useState(false);
-  const [openView, setOpenView] = React.useState(false);
-  const [status, setStatus] = React.useState('');
+  const [menuActions, setMenuActions] = useState<null | HTMLElement>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openView, setOpenView] = useState(false);
+  const [modalChildren, setModalChildren] = useState('');
+  const [warning, setWarning] = useState('');
 
-  const open = Boolean(anchorEl);
+  const open = Boolean(menuActions);
 
-  const handleOpenEdit = () => setOpenEdit(true);
-  const handleCloseEdit = () => setOpenEdit(false);
+  const handleOpenEdit = async (id: number) => {
+    const currentProject = state.projects.find(t => t.id === id);
+    if (currentProject) {
+      await getEditTask(id);
+    }
+    getMemberProject();
+    getTasks();
+    setModalChildren('Edit');
+    setOpenEdit(true);
+    handleCloseActions();
+    setTitle('Edit Project: ');
+  };
 
-  const handleOpenView = () => setOpenView(true);
-  const handleCloseView = () => setOpenView(false);
+  const handleOpenView = async (id: number) => {
+    const currentProject = state.projects.find(t => t.id === id);
+    if (currentProject) {
+      await getEditTask(id);
+      const req: ITimeSheetReq = {
+        projectId: currentProject.id,
+        startDate: moment(startDate).format('YYYY-MM-DD'),
+        endDate: moment(endDate).format('YYYY-MM-DD')
+      };
+      getTimeSheetTasks(req);
+      getTimeSheetTeams(req);
+    }
+    setModalChildren('View');
+    setOpenView(true);
+    handleCloseActions();
+  };
 
   const handleOpenActions = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    setMenuActions(event.currentTarget);
+    setWarning(project.status === ProjectStatus.ACTIVE ? 'Deactive' : 'Active');
   };
   const handleCloseActions = () => {
-    setAnchorEl(null);
+    setMenuActions(null);
   };
-
   const handleWarning = () => {
-    setAnchorEl(null);
+    setMenuActions(null);
     Swal.fire({
       title: 'Are you sure?',
-      text: `${status} project: 'Project'?`,
+      text: `${warning} project: ${project.name}?`,
       icon: 'warning',
       reverseButtons: true,
       showCancelButton: true,
@@ -75,14 +115,36 @@ const TaskActions: React.FC = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         Swal.fire(
-          `${status}!`,
-          `Your file has been ${status}!.`,
+          `${warning}!`,
+          `Your file has been ${warning}!.`,
           'success'
         );
+        project.status === ProjectStatus.ACTIVE ? inactiveProject(project.id) : activeProject(project.id);
       }
     });
   };
-
+  const handleWarningDelete = () => {
+    setMenuActions(null);
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Delete project: ${project.name}?`,
+      icon: 'warning',
+      reverseButtons: true,
+      showCancelButton: true,
+      confirmButtonColor: '#7cd1f9',
+      cancelButtonColor: '#efefef',
+      confirmButtonText: 'Yes'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire(
+          'Deleted!',
+          'Your file has been Delete!.',
+          'success'
+        );
+        deleteTask(project.id);
+      }
+    });
+  };
   return (
     <React.Fragment>
       <Button
@@ -97,57 +159,44 @@ const TaskActions: React.FC = () => {
         <span><ArrowDropDown sx={{ mt: '8px' }} fontSize='small'/></span>
       </Button>
       <Menu
-        anchorEl={anchorEl}
+        anchorEl={menuActions}
         open={open}
         onClose={handleCloseActions}
+        disableScrollLock={true}
         MenuListProps={{
           'aria-labelledby': 'basic-button'
         }}
       >
-        <MenuItem>
-          <div className='modal' onClick={handleOpenEdit}>
+        <MenuItem onClick={() => {
+          handleOpenEdit(project.id);
+          setProjectInfo(project);
+        }}>
+          <div className='modal' >
             <ListItemIcon>
               <Edit fontSize="small" />
             </ListItemIcon>
             <ListItemText>Edit</ListItemText>
           </div>
-          <Modal
-            open={openEdit}
-            onClose={handleCloseEdit}
-          >
-            <Box sx={editStyle}>
-              <EditModal setOpenEdit={setOpenEdit}/>
-            </Box>
-          </Modal>
+
         </MenuItem>
         <MenuItem>
-          <div className='modal' onClick={handleOpenView}>
+          <div className='modal' onClick={async () => await handleOpenView(project.id)}>
             <ListItemIcon>
               <Visibility fontSize="small" />
             </ListItemIcon>
             <ListItemText>View</ListItemText>
           </div>
-          <Modal
-            open={openView}
-            onClose={handleCloseView}
-          >
-            <Box sx={viewStyle}>
-              <ViewModal />
-            </Box>
-          </Modal>
         </MenuItem>
         <MenuItem onClick={() => {
-          setStatus('Deactive');
           handleWarning();
         }}>
           <ListItemIcon>
-            <Close fontSize="small" />
+            {project.status === ProjectStatus.ACTIVE ? <Close fontSize="small" /> : <Check fontSize="small"/>}
           </ListItemIcon>
-          <ListItemText>Deactive</ListItemText>
+          <ListItemText>{project.status === ProjectStatus.ACTIVE ? 'Deactive' : 'Active'}</ListItemText>
         </MenuItem>
         <MenuItem onClick={() => {
-          setStatus('Delete');
-          handleWarning();
+          handleWarningDelete();
         }}>
           <ListItemIcon>
             <Delete fontSize="small" />
@@ -155,6 +204,20 @@ const TaskActions: React.FC = () => {
           <ListItemText sx={{ color: '#a94442' }}>Delete</ListItemText>
         </MenuItem>
       </Menu>
+      <Modal
+        disableScrollLock={false}
+        open={modalChildren === 'Edit' ? openEdit : openView}
+        onClose={() => modalChildren === 'Edit' ? setOpenEdit(false) : setOpenView(false)}
+      >
+        {modalChildren === 'Edit'
+          ? <Box sx={editStyle}>
+            <EditModal setOpenEdit={setOpenEdit} />
+          </Box>
+          : <Box sx={viewStyle}>
+            <ViewModal />
+          </Box>
+        }
+      </Modal>
     </React.Fragment>
   );
 };

@@ -18,13 +18,24 @@
     }
 
     .save-btn {
-        cursor: default;
+        cursor: pointer;
         background-color: #f24b50;
-        color: rgba(0,0,0,.26);
+        color: white;
     }
+    .save-btn:disabled {
+        color: #ccc;
+    }
+
 }
 .form-edit {
     position: relative;
+
+    .form-content {
+        height: 520px;
+    }
+    .form-btn {
+        z-index: 2;
+    }
 }
 
 .header-title {
