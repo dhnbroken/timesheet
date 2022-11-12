@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './DefaultLayout.module.scss';

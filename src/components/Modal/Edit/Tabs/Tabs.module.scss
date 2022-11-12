@@ -1,6 +1,14 @@
-.general-tab {
+.general__form {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     gap: 20px;
+}
+
+.radio-btn {
+    display: none !important;
+}
+.task-list {
+    display: flex;
+    align-items: center;
 }

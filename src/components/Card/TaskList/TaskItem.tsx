@@ -2,9 +2,9 @@ import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './TaskList.module.scss';
 import TaskActions from './TaskActions';
-import { IProject } from 'src/store/interface';
+import { IProject } from 'src/store/interface/projectInterface';
 import moment from 'moment';
-import { ProjectType } from 'src/store/enum';
+import { ProjectStatus, ProjectType } from 'src/store/enum/Project';
 
 const cx = classNames.bind(styles);
 
@@ -32,22 +32,19 @@ const TaskItem: React.FC<Props> = (Props) => {
           <span className={cx('project')}>{project.name}</span>
           <span className={cx('pm')}>{project.pms.join(', ')}</span>
           <span className={cx('member')}>{project.activeMember} members</span>
-          {project.projectType !== 5
+          {project.projectType !== ProjectType.Product && project.projectType !== ProjectType.Training
             ? <span className={cx('status')}>{projectTypes(project.projectType)}</span>
             : null
           }
           <span className={cx('time')}>
             { (project.timeEnd)
-              ? moment(project.timeStart).format('DD/MM/YYYY') + ' - ' + moment(project.timeEnd).format('DD/MM/YYYY')
+              ? `${moment(project.timeStart).format('DD/MM/YYYY')} - ${moment(project.timeEnd).format('DD/MM/YYYY')}`
               : moment(project.timeStart).format('DD/MM/YYYY')
             }
           </span>
           <div className={cx('action-btn')}>
-            {project.status === 0
-              ? <span className={cx('project-status', 'active')}>Active</span>
-              : <span className={cx('project-status', 'deactive')}>Deactive</span>
-            }
-            <TaskActions />
+            <span className={cx('project-status', project.status === ProjectStatus.ACTIVE ? 'active' : 'deactive')}>{project.status === ProjectStatus.ACTIVE ? 'Active' : 'Deactive'}</span>
+            <TaskActions project={project} />
           </div>
         </td>
       </tr>

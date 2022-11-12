@@ -1,9 +1,13 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
-import { Tab, Tabs, Typography, Box, SelectChangeEvent, FormControl, Select, InputLabel, MenuItem, Button } from '@mui/material';
+import { Tab, Tabs, Typography, Box, SelectChangeEvent, FormControl, Select, MenuItem, Button } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import styles from './ViewModal.module.scss';
+import Team from './Tabs/Team';
+import Task from './Tabs/Task';
+import moment, { unitOfTime } from 'moment';
+import { GlobalContextProvider } from 'src/Context/GlobalContext';
+import { ITimeSheetReq } from '@/store/interface/TimeSheet';
 
 const cx = classNames.bind(styles);
 
@@ -18,7 +22,7 @@ function TabPanel (props: TabPanelProps) {
 
   return (
     <div
-      className='tab-view'
+      className='overflow-x'
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
@@ -42,38 +46,97 @@ function a11yProps (index: number) {
 }
 
 const ViewModal: React.FC = () => {
-  const [time, setTime] = React.useState('');
-  const [value, setValue] = React.useState(0);
+  const [time, setTime] = useState(1);
+  const [value, setValue] = useState(0);
+  const { startDate, endDate, setStartDate, setEndDate, state, editInfo, getTimeSheetTasks, getTimeSheetTeams } = useContext(GlobalContextProvider);
+
+  const getTimeSheetAPI = () => {
+    const req: ITimeSheetReq = {
+      projectId: Number(state.projectInfo.id),
+      startDate: moment(startDate).format('YYYY-MM-DD'),
+      endDate: moment(endDate).format('YYYY-MM-DD')
+    };
+    getTimeSheetTasks(req);
+    getTimeSheetTeams(req);
+  };
+  const [timeUnit, setTimeUnit] = useState<unitOfTime.DurationConstructor>('weeks');
 
   const handleSelectTime = (event: SelectChangeEvent) => {
-    setTime(event.target.value);
+    setTime(Number(event.target.value));
+    switch (Number(event.target.value)) {
+    case 1: {
+      setStartDate(moment().startOf('isoWeek').format('DD MMM YYYY'));
+      setEndDate(moment().endOf('isoWeek').format('D MMM YYYY'));
+      setTimeUnit('weeks');
+    }
+      break;
+    case 2: {
+      setStartDate(moment().startOf('month').format('DD MMM YYYY'));
+      setEndDate(moment().endOf('month').format('D MMM YYYY'));
+      setTimeUnit('months');
+    }
+      break;
+    case 3: {
+      setStartDate(moment().startOf('quarter').format('DD MMM YYYY'));
+      setEndDate(moment().endOf('quarter').format('D MMM YYYY'));
+      setTimeUnit('quarters');
+    }
+      break;
+    case 4: {
+      setStartDate(moment().startOf('year').format('DD MMM YYYY'));
+      setEndDate(moment().endOf('year').format('D MMM YYYY'));
+      setTimeUnit('years');
+    }
+      break;
+    case 5: {
+      const startDay = moment(editInfo.timeStart);
+      const endDay = moment(editInfo.timeEnd);
+      setStartDate(moment(startDay).format('DD MMM YYYY'));
+      setEndDate(moment(endDay).format('D MMM YYYY'));
+      const req: ITimeSheetReq = {
+        projectId: Number(state.projectInfo.id),
+        startDate: '',
+        endDate: ''
+      };
+      getTimeSheetTasks(req);
+      getTimeSheetTeams(req);
+    }
+      break;
+    default: break;
+    }
   };
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  const handleChangeTime = (amount: number) => {
+    setStartDate(moment(startDate).add(amount, timeUnit).startOf(timeUnit).format('DD MMM YYYY'));
+    setEndDate(moment(endDate).add(amount, timeUnit).endOf(timeUnit).format('D MMM YYYY'));
+  };
+
+  useEffect(() => {
+    getTimeSheetAPI();
+  }, [startDate, endDate]);
   return (
     <React.Fragment>
       <div className={cx('view')}>
         <div className='flex-between'>
           <div>
-            <button className={cx('view-btn')}>
+            <button className={cx('view-btn')} onClick={() => handleChangeTime(-1)}>
               <ChevronLeft />
             </button>
-            <button className={cx('view-btn')}>
+            <button className={cx('view-btn')} onClick={() => handleChangeTime(1)}>
               <ChevronRight />
             </button>
-            <span className={cx('view-title')}><b>Week: 3 - 9 Oct 2022</b></span>
+            <span className={cx('view-title')}><b>{`Week: ${startDate} - ${endDate}`}</b></span>
           </div>
           <div className='flex-between'>
             <Box sx={{ minWidth: 120, width: 200, mr: '30px' }}>
               <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Week</InputLabel>
                 <Select
-                  labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  value={time}
-                  label="Week"
+                  value={time.toString()}
                   onChange={handleSelectTime}
                 >
                   <MenuItem value={1}>Week</MenuItem>
@@ -104,10 +167,10 @@ const ViewModal: React.FC = () => {
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
-              Task
+            <Task />
           </TabPanel>
           <TabPanel value={value} index={1}>
-              Team
+            <Team />
           </TabPanel>
         </Box>
       </div>

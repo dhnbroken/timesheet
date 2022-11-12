@@ -1,8 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-import React, { SyntheticEvent } from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './Login.module.scss';
 import { TextField, Button, Box, Checkbox, InputAdornment, IconButton } from '@mui/material';
@@ -13,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { login } from 'src/services/auth.service';
 import Swal from 'sweetalert2';
-import { getUser } from 'src/services/user.service';
 
 const cx = classNames.bind(styles);
 
@@ -61,13 +56,13 @@ const Login: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (localStorage.getItem('user')) {
       navigate('/home');
     }
   }, [localStorage.getItem('user')]);
 
-  const [values, setValues] = React.useState<State>({
+  const [values, setValues] = useState<State>({
     password: '',
     showPassword: false
   });

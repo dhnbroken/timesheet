@@ -1,123 +1,218 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-import React from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import {
   Select, InputAdornment, Checkbox, TextField, Table,
-  TableContainer, TableHead, TableRow, TableBody, TableCell,
-  MenuItem, FormControl, InputLabel, SelectChangeEvent
+  TableRow, TableBody, TableCell,
+  MenuItem, FormControl, InputLabel, SelectChangeEvent,
+  Accordion, AccordionSummary, AccordionDetails, Grid, Box
 } from '@mui/material';
-import { Close, Search } from '@mui/icons-material/';
+import { Search, ExpandMore, ArrowBackIos } from '@mui/icons-material/';
+import { GlobalContextProvider } from 'src/Context/GlobalContext';
+import { IUser } from 'src/store/interface/User';
+import { UserType } from 'src/store/enum/Project';
+import TeamInfo from './TeamInfo';
 
-function createData (
-  username: string,
-  id: number,
-  email: string
-) {
-  return { username, id, email };
-}
+const Team: React.FC = () => {
+  const { editInfo, users } = useContext(GlobalContextProvider);
+  const [branch, setBranch] = useState('');
+  const [type, setType] = useState('');
+  const [memberQuery, setMemberQuery] = useState('');
 
-const rows = [
-  createData('Name', 1, 'abc@gmail.com'),
-  createData('Name', 2, 'abc@gmail.com'),
-  createData('Name', 3, 'abc@gmail.com')
-];
-
-const Team = () => {
-  const [role, setRole] = React.useState('');
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setRole(event.target.value);
+  const keys = ['name', 'emailAddress'];
+  const handleChangeBrand = (event: SelectChangeEvent) => {
+    setBranch(event.target.value);
   };
+  const handleChangeType = (event: SelectChangeEvent) => {
+    setType(event.target.value);
+  };
+
+  const membersId = editInfo.users.map((user) => user.userId);
+  const usersId = useMemo(() => users.filter((user) => membersId.includes(user.id)), [editInfo.users]);
+  const usersIdTest = usersId.map((user, index) => Object.assign({}, user, editInfo.users[index]));
+
+  const [teamMember, setTeamMember] = useState(usersIdTest);
+  const userSelect = useMemo(() => users.filter((user) => !teamMember.map((users) => users.id).includes(user.id)), [teamMember]);
+  const [teamSelect, setTeamSelect] = useState(userSelect);
+
+  const handleSelectMember = (user) => {
+    const index = teamSelect.findIndex(team => team.id === user.id);
+    teamSelect.splice(index, 1);
+    if (!teamMember.length && !activeFilter.length) {
+      user.type = UserType.PROJECTMANAGER;
+    }
+    setTeamMember([...teamMember, user]);
+    !editInfo.users.length
+      ? editInfo.users.push({
+        userId: user.id,
+        type: UserType.PROJECTMANAGER
+      })
+      : editInfo.users.push({
+        userId: user.id,
+        type: UserType.MEMBER
+      });
+  };
+
+  const handleUnselectMember = (user: IUser) => {
+    const index = teamMember.findIndex(team => team.id === user.id);
+    teamMember.splice(index, 1);
+    editInfo.users.splice(index, 1);
+    setTeamSelect([...teamSelect, user]);
+  };
+
+  const [showDeactive, setShowDeactive] = useState(false);
+
+  const activeFilter = teamMember.filter((user) => user.type !== UserType.DEACTIVE);
+
   return (
     <React.Fragment>
-      <div className='flex'>
-        <div style={{ width: '60%' }}>
-          <TableContainer>
-            <Table sx={{ width: '100%' }} aria-label="simple table">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ borderBottom: 'none', padding: '0' }}>Team</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  <TableCell sx={{ padding: '1', borderBottom: 'none' }}>
-                    <Checkbox sx={{
-                      padding: '0 5px 0 0',
-                      fontSize: '12px',
-                      '&.Mui-checked': {
-                        color: '#ff4081'
-                      }
-                    }}/>
-                    <b>Show deactive member</b>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={2}>
-                    <TextField
-                      size='small'
-                      fullWidth
-                      id="input-with-icon-textfield"
-                      label="Search by client or project name"
-                      InputProps={{
-                        sx: { padding: '5px 0' },
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Search sx={{ marginLeft: '12px' }}/>
-                          </InputAdornment>
-                        )
-                      }}
-                      variant="standard"
-                    />
-                  </TableCell>
-                </TableRow>
-                {rows.map((row, index) => (
-                  <TableRow
-                    key={index}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell sx={{ padding: '1' }} component="th" scope="row">
-                      <div className='flex-center gap-7'>
-                        <button type='button'><Close /></button>
-                        <div>
-                          <Checkbox disabled sx={{ border: 'none', padding: '0' }} />
-                          <p>Member</p>
-                        </div>
-                        <div>
-                          <p>{row.username}</p>
-                          <p>{row.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell sx={{ padding: '1' }} align="left">
-                      <FormControl fullWidth variant="standard" sx={{ m: 1, minWidth: 120 }}>
-                        <InputLabel id="demo-simple-select-standard-label">role</InputLabel>
-                        <Select
-                          labelId="demo-simple-select-standard-label"
-                          id="demo-simple-select-standard"
-                          value={role}
-                          onChange={handleChange}
-                          label="Role"
-                        >
-                          <MenuItem value="">
-                            <em>None</em>
-                          </MenuItem>
-                          <MenuItem value={1}>Project Manager</MenuItem>
-                          <MenuItem value={2}>Member</MenuItem>
-                          <MenuItem value={3}>Shadow</MenuItem>
-                          <MenuItem value={4}>Deactive</MenuItem>
-                        </Select>
-                      </FormControl>
-
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid container spacing={1}>
+          <Grid item xs={6}>
+            <Table className='expansion-panel' aria-label="team table">
+              <Accordion >
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  aria-controls="team-content"
+                >
+                  <b>Team</b>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <TableBody >
+                    <TableRow>
+                      <TableCell sx={{ padding: '1', borderBottom: 'none' }}>
+                        <Checkbox sx={{
+                          padding: '0 5px 0 0',
+                          fontSize: '12px',
+                          '&.Mui-checked': {
+                            color: '#ff4081'
+                          }
+                        }}
+                        checked={showDeactive}
+                        onChange={() => setShowDeactive(!showDeactive)}
+                        />
+                        <b>Show deactive member</b>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={2}>
+                        <TextField
+                          size='small'
+                          fullWidth
+                          id="input-with-icon-textfield"
+                          label="Search by client or project name"
+                          InputProps={{
+                            sx: { padding: '5px 0' },
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Search sx={{ marginLeft: '12px' }}/>
+                              </InputAdornment>
+                            )
+                          }}
+                          variant="standard"
+                        />
+                      </TableCell>
+                    </TableRow>
+                    {showDeactive
+                      ? !!teamMember.length && teamMember.map((user, index) => (
+                        <TeamInfo key={index} user={user} index={index}
+                          handleUnselectMember={handleUnselectMember}
+                          teamMember={teamMember}
+                        />
+                      ))
+                      : !!activeFilter.length && activeFilter.map((user, index) => (
+                        <TeamInfo key={index} user={user} index={index}
+                          handleUnselectMember={handleUnselectMember}
+                          teamMember={teamMember}
+                        />
+                      ))}
+                  </TableBody>
+                </AccordionDetails>
+              </Accordion>
             </Table>
-          </TableContainer>
-        </div>
-        <div>s</div>
-      </div>
+          </Grid>
+          <Grid item xs={6}>
+            <Table className='expansion-panel' sx={{ ml: '8px' }} aria-label="member table">
+              <Accordion >
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  aria-controls="member-content"
+                >
+                  <b>Select Team Member</b>
+                </AccordionSummary>
+                <AccordionDetails sx={{ maxHeight: '500px' }} className='overflow-x'>
+                  <TableBody>
+                    <TableRow >
+                      <TableCell colSpan={2}>
+                        <FormControl variant="standard" sx={{ m: 1, minWidth: 60 }}>
+                          <InputLabel id="branch">All</InputLabel>
+                          <Select
+                            labelId="branch"
+                            value={branch}
+                            onChange={handleChangeBrand}
+                            label="All"
+                          >
+                            <MenuItem value={10}>Ha Noi</MenuItem>
+                            <MenuItem value={20}>SG</MenuItem>
+                            <MenuItem value={30}>DN</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <FormControl variant="standard" sx={{ m: 1, minWidth: 60 }}>
+                          <InputLabel id="type">All</InputLabel>
+                          <Select
+                            labelId="type"
+                            value={type}
+                            onChange={handleChangeType}
+                            label="All"
+                          >
+                            <MenuItem value={10}>Staff</MenuItem>
+                            <MenuItem value={20}>Intern</MenuItem>
+                            <MenuItem value={30}>Collab</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <TextField
+                          size='small'
+                          id="input-with-icon-textfield"
+                          label="Search by name, email"
+                          InputProps={{
+                            sx: { padding: '5px 0', maxWidth: '150px' },
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Search sx={{ marginLeft: '12px' }}/>
+                              </InputAdornment>
+                            )
+                          }}
+                          onChange={e => setMemberQuery(e.target.value)}
+                          variant="standard"
+                        />
+                      </TableCell>
+                    </TableRow>
+                    {teamSelect.length && teamSelect.filter((user) =>
+                      keys.some(key => user[key].toLowerCase().includes(memberQuery))
+                    ).map((user, index) => (
+                      <TableRow
+                        key={index}
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell className='pointer' component="td" scope="row" onClick={() => handleSelectMember(user)}>
+                          <div className='flex-center gap-7'>
+                            <button type='button'><ArrowBackIos /></button>
+                            <div className='flex-column'>
+                              <img alt='member' src='' width='60' height='60'/>
+                            </div>
+                            <div>
+                              <p>{user.name}</p>
+                              <p>{user.emailAddress}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </AccordionDetails>
+              </Accordion>
+            </Table>
+          </Grid>
+        </Grid>
+      </Box>
     </React.Fragment>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './TaskList.module.scss';
 import TaskItem from './TaskItem';
-import { IProjectList } from 'src/store/interface';
+import { IProjectList } from 'src/store/interface/projectInterface';
 
 const cx = classNames.bind(styles);
 
@@ -13,7 +13,6 @@ interface Props {
 
 const TaskList: React.FC<Props> = (Props) => {
   const { projects } = Props;
-
   return (
     <React.Fragment>
       <div className={cx('task-list')}><div >
@@ -22,8 +21,8 @@ const TaskList: React.FC<Props> = (Props) => {
             <tr><th className={cx('table-header')}><span>{projects.customerName}</span></th></tr>
           </thead>
           <tbody className={cx('table-body')}>
-            {projects.list.map((project, index) => (
-              <TaskItem key={index} project={project}/>
+            {projects.list.length && projects.list.map((project, index) => (
+              <TaskItem key={index} project={project} />
             ))}
           </tbody>
         </table>

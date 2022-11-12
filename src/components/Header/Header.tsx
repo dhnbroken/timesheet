@@ -6,15 +6,11 @@ import { Grid } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileArrowUp, faEllipsisVertical, faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { faFileLines } from '@fortawesome/free-regular-svg-icons';
+import { srcImg, flagImg, docsHref, usageHref } from 'src/assets/link/link';
 
 const cx = classNames.bind(styles);
 
 const Header: React.FC = () => {
-  const srcImg = 'http://training-timesheet.nccsoft.vn/assets/images/nccsoft_vietnam_logo.png';
-  const flagImg = 'https://raw.githubusercontent.com/legacy-icons/famfamfam-flags/master/dist/png/gb.png';
-  const docsHref = 'https://docs.google.com/document/d/13kP2JNm9BhWx0-BW7Hb0RJmukF4r6G9JjZb6tIpcEUU/edit';
-  const useageHref = 'https://docs.google.com/document/d/1M4EM-uPJLOxYx-BW8xyQsNjZFTQpgFA42GdtYjNok64/edit';
-
   return (
     <React.Fragment>
       <div className={cx('wrapper')}>
@@ -37,7 +33,7 @@ const Header: React.FC = () => {
                         </a>
                       </div>
                       <div className={cx('icon')}>
-                        <a href={useageHref} target='_blank' rel="noreferrer">
+                        <a href={usageHref} target='_blank' rel="noreferrer">
                           <FontAwesomeIcon color='white' icon={faFileLines} fontSize='20px' />
                         </a>
                       </div>
