@@ -4,12 +4,8 @@ import Project from 'src/pages/Project/Project';
 
 const publicRoutes = [
   { path: '/', component: Home },
-  { path: '/project', component: Project }
-];
-
-const privateRoutes = [
+  { path: '/project', component: Project },
   { path: '/login', component: Login }
-
 ];
 
-export { publicRoutes, privateRoutes };
+export { publicRoutes };

@@ -51,5 +51,8 @@ export const ProjectContext = {
   deleteTask: () => {},
   getEditTask: () => {},
   getTimeSheetTasks: () => {},
-  getTimeSheetTeams: () => {}
+  getTimeSheetTeams: () => {},
+  containPM: [],
+  setContainPM: () => {},
+  clearEditInfo: () => {}
 };

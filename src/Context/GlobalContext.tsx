@@ -1,5 +1,5 @@
-import React, { useState, useReducer } from 'react';
-import { IProject, IProjectReq, IProjectSave, IProjectState, IQuantityProject } from 'src/store/interface/projectInterface';
+import React, { useState, useReducer, useEffect } from 'react';
+import { IProject, IProjectReq, IProjectSave, IProjectState, IProjectUser, IQuantityProject } from 'src/store/interface/projectInterface';
 import taskReducer from 'src/store/reducer';
 import { ProjectContext } from './ProjectContext';
 import * as actions from 'src/store/actions';
@@ -15,6 +15,7 @@ import { getAllCustomer } from 'src/services/customer.service';
 import { ICustomer } from 'src/store/interface/Customer';
 import moment from 'moment';
 import { getTimeSheetTask, getTimeSheetTeam } from 'src/services/timesheet.service';
+import { getUser } from 'src/services/user.service';
 
 interface GlobalContext {
     state: IProjectState
@@ -68,6 +69,9 @@ interface GlobalContext {
     getEditTask: (id: number) => void
     getTimeSheetTasks: (req: ITimeSheetReq) => void
     getTimeSheetTeams: (req: ITimeSheetReq) => void
+    containPM: Array<IUser & IProjectUser>
+    setContainPM: (user: Array<IUser & IProjectUser>) => void
+    clearEditInfo: () => void
 }
 
 interface PropsProvider {
@@ -101,9 +105,24 @@ export const GlobalStoreContext = ({ children }: PropsProvider) => {
   const [projects, setProjects] = useState<IProject[]>([]);
   const [customer, setCustomer] = useState<ICustomer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [containPM, setContainPM] = useState<Array<IUser & IProjectUser>>([]);
 
   const [startDate, setStartDate] = useState(moment().startOf('isoWeek').format('DD MMM YYYY'));
   const [endDate, setEndDate] = useState(moment().endOf('isoWeek').format('D MMM YYYY'));
+
+  const clearEditInfo = () => {
+    editInfo.name = '';
+    editInfo.code = '';
+    editInfo.timeStart = '';
+    editInfo.timeEnd = '';
+    editInfo.note = '';
+    editInfo.customerId = 0;
+    editInfo.tasks = [];
+    editInfo.projectTargetUsers = [];
+    editInfo.users = [];
+    editInfo.isNotifyToKomu = false;
+    editInfo.komuChannelId = '';
+  };
 
   const getMemberProject = async () => {
     try {
@@ -156,10 +175,8 @@ export const GlobalStoreContext = ({ children }: PropsProvider) => {
   };
 
   const deleteTask = async (id: number) => {
-    try {
-      await deleteProject(id);
-      setIsChange(!isChange);
-    } catch (error) {}
+    const res = await deleteProject(id);
+    res && res.status === 200 && setIsChange(!isChange);
   };
   const getEditTask = async (id: number) => {
     try {
@@ -183,6 +200,16 @@ export const GlobalStoreContext = ({ children }: PropsProvider) => {
       setViewTeam(res);
     } catch (err) {}
   };
+
+  const accessToken = localStorage.getItem('user');
+
+  useEffect(() => {
+    if (accessToken) {
+      getUser().then((res) => {
+        res && setInfo(res);
+      });
+    }
+  }, [accessToken]);
 
   const valueContext = {
     state,
@@ -235,7 +262,10 @@ export const GlobalStoreContext = ({ children }: PropsProvider) => {
     deleteTask,
     getEditTask,
     getTimeSheetTasks,
-    getTimeSheetTeams
+    getTimeSheetTeams,
+    containPM,
+    setContainPM,
+    clearEditInfo
   };
   return <GlobalContextProvider.Provider value={valueContext}>
     {children}

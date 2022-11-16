@@ -18,7 +18,7 @@ const TeamInfo: React.FC<Props> = (props) => {
   const { register } = useFormContext();
 
   const { user, index, handleUnselectMember, teamMember } = props;
-  const { editInfo } = useContext(GlobalContextProvider);
+  const { editInfo, setContainPM } = useContext(GlobalContextProvider);
 
   const [role, setRole] = useState(user.type.toString());
 
@@ -26,9 +26,10 @@ const TeamInfo: React.FC<Props> = (props) => {
     const index = teamMember.findIndex(team => team.id === user.id);
     user.type = event.target.value;
     editInfo.users[index].type = Number(event.target.value);
+    const PMFilter = teamMember.filter((user) => user.type === UserType.PROJECTMANAGER);
     setRole(user.type.toString());
+    setContainPM(PMFilter);
   };
-
   const userTypes = (type: UserType) => {
     const newType = new Map([
       [0, 'Member'],

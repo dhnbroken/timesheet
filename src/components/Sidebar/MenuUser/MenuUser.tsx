@@ -4,14 +4,13 @@ import styles from './MenuUser.module.scss';
 import { ExpandMore, ExitToApp } from '@mui/icons-material/';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { Link } from 'react-router-dom';
-import { logout } from 'src/services/auth.service';
+import { Link, useNavigate } from 'react-router-dom';
 import { GlobalContextProvider } from 'src/Context/GlobalContext';
 
 const cx = classNames.bind(styles);
 
-const MenuList: React.FC = () => {
-  const { info } = useContext(GlobalContextProvider);
+const MenuUser: React.FC = () => {
+  const { info, setQuery, setProjectStatus, clearEditInfo } = useContext(GlobalContextProvider);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -21,6 +20,19 @@ const MenuList: React.FC = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const navigate = useNavigate();
+
+  const removeAccessToken = () => {
+    return localStorage.removeItem('user');
+  };
+
+  const handleLogOut = () => {
+    removeAccessToken();
+    setQuery('');
+    setProjectStatus('');
+    clearEditInfo();
+    navigate('/login');
   };
 
   return (
@@ -54,7 +66,7 @@ const MenuList: React.FC = () => {
               }}
             >
               <Link to='/' className={cx('link')}>
-                <MenuItem sx={{ fontSize: '14px', px: '18px', py: '7px', width: '150px' }} onClick={() => logout()}>
+                <MenuItem sx={{ fontSize: '14px', px: '18px', py: '7px', width: '150px' }} onClick={handleLogOut}>
                   <ExitToApp fontSize='small' sx={{ mr: '7px', mt: '2px' }} />
                   <span className={cx('flex-1')}>Log out</span>
                 </MenuItem>
@@ -67,4 +79,4 @@ const MenuList: React.FC = () => {
   );
 };
 
-export default MenuList;
+export default MenuUser;

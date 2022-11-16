@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useContext, useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import { Tab, Tabs, Typography, Box, Checkbox, TextField } from '@mui/material';
@@ -15,9 +14,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { GlobalContextProvider } from 'src/Context/GlobalContext';
 import { saveProject } from 'src/services/project.service';
-import { initEditState } from 'src/store/constants';
 import Swal from 'sweetalert2';
-import { toast, ToastContainer } from 'react-toastify';
+import { UserType } from 'src/store/enum/Project';
 
 const cx = classNames.bind(styles);
 
@@ -65,8 +63,7 @@ const schema = yup.object({
   timeStart: yup
     .date()
     .required('Project time start is required!')
-    .nullable()
-    .max(yup.ref('timeEnd'), 'Time start must be before time end'),
+    .nullable(),
   timeEnd: yup
     .date()
     .required('Project time end is required!')
@@ -76,7 +73,7 @@ const schema = yup.object({
 
 const EditModal: React.FC<Props> = (props) => {
   const { setOpenEdit } = props;
-  const { editInfo, setEditInfo, title, isChange, setIsChange } = useContext(GlobalContextProvider);
+  const { editInfo, title, isChange, setIsChange, getMemberProject, getTasks, clearEditInfo } = useContext(GlobalContextProvider);
   const [value, setValue] = useState(0);
   const [checked, setChecked] = useState(editInfo.isNotifyToKomu);
 
@@ -91,8 +88,13 @@ const EditModal: React.FC<Props> = (props) => {
 
   const handleCancel = () => {
     setOpenEdit(false);
-    setEditInfo(initEditState);
+    clearEditInfo();
   };
+
+  useEffect(() => {
+    getMemberProject();
+    getTasks();
+  }, []);
 
   const [isDisable, setIsDisable] = useState(true);
 
@@ -102,12 +104,14 @@ const EditModal: React.FC<Props> = (props) => {
     !isNotError ? setIsDisable(true) : setIsDisable(false);
   }, [methods.formState]);
 
+  const PMFilter = editInfo.users.filter((user) => user.type === UserType.PROJECTMANAGER);
+
   const onSubmit = () => {
-    if (!editInfo.users.length) {
+    if (!editInfo.users.length || !PMFilter.length) {
       Swal.fire({
         position: 'center',
         icon: 'error',
-        title: 'Project must have at least one member!',
+        title: 'Project must have at least one member or one PM',
         showConfirmButton: true
       });
     } else if (!editInfo.tasks.length) {
@@ -120,18 +124,11 @@ const EditModal: React.FC<Props> = (props) => {
     } else {
       setOpenEdit(false);
       if (!editInfo.isNotifyToKomu || editInfo.komuChannelId === '') editInfo.komuChannelId = null;
-      saveProject(editInfo);
-      setIsChange(!isChange);
-      setEditInfo(initEditState);
-      toast.success(`${title} successful`, {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'light'
-      });
+      saveProject(editInfo)
+        .then((res) => {
+          res && res.status === 200 && setIsChange(!isChange);
+        }
+        );
     }
   };
 
