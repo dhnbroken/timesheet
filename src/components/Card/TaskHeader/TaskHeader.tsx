@@ -5,7 +5,6 @@ import { MoreVert, Add, Refresh, Search } from '@mui/icons-material';
 import { Grid, Button, Menu, MenuItem, InputAdornment, TextField, Box, SelectChangeEvent, FormControl, Select, Modal } from '@mui/material';
 import EditModal from 'src/components/Modal/Edit/EditModal';
 import { GlobalContextProvider } from 'src/Context/GlobalContext';
-import { initEditState } from 'src/store/constants';
 import { ProjectStatus } from 'src/store/enum/Project';
 
 const cx = classNames.bind(styles);
@@ -26,7 +25,10 @@ const editStyle = {
 };
 
 const TaskHeader: React.FC = () => {
-  const { projectStatus, setProjectStatus, getMemberProject, getTasks, setQuery, quantity, editInfo, setEditInfo, setIsChange, isChange, setTitle } = useContext(GlobalContextProvider);
+  const {
+    projectStatus, setProjectStatus, getMemberProject, getTasks, setQuery,
+    quantity, editInfo, setIsChange, isChange, setTitle, clearEditInfo
+  } = useContext(GlobalContextProvider);
 
   const allProject = useMemo(() => quantity.reduce((previousValue, currentValue) => previousValue + currentValue.quantity, 0), [quantity]);
 
@@ -40,7 +42,7 @@ const TaskHeader: React.FC = () => {
     setOpenEdit(true);
     getMemberProject();
     getTasks();
-    setEditInfo(initEditState);
+    clearEditInfo();
     setTitle('Create Project: ');
     delete editInfo.id;
   };
@@ -55,7 +57,7 @@ const TaskHeader: React.FC = () => {
     setIsChange(!isChange);
   };
   const handleSearchEnter = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.code === 'Enter' && inputValue) {
+    if (e.code === 'Enter') {
       setQuery(inputValue);
     }
   };
@@ -101,7 +103,7 @@ const TaskHeader: React.FC = () => {
                   open={openEdit}
                   onClose={() => {
                     setOpenEdit(false);
-                    setEditInfo(initEditState);
+                    clearEditInfo();
                   }}
                 >
                   <Box sx={editStyle}>

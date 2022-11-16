@@ -94,7 +94,6 @@ const General: React.FC = () => {
             <label>Project Name*</label>
           </Grid>
           <Grid item xs={6}>
-            <p className='valid-error'>{methods.formState.errors.name?.message}</p>
             <TextField
               error={!!methods.formState.errors.name?.message}
               placeholder='Project name'
@@ -105,6 +104,7 @@ const General: React.FC = () => {
               }}
               variant="outlined" fullWidth
             />
+            <p className='valid-error'>{methods.formState.errors.name?.message}</p>
           </Grid>
         </Grid>
         <Grid container spacing={2}>
@@ -112,13 +112,13 @@ const General: React.FC = () => {
             <label>Project Code*</label>
           </Grid>
           <Grid item xs={6}>
-            <p className='valid-error'>{methods.formState.errors.code?.message}</p>
             <TextField error={!!methods.formState.errors.code?.message}
               placeholder='Project code'
               {...register('code')} defaultValue={editInfo.code} variant="outlined"
               onChange={(e) => {
                 editInfo.code = e.target.value;
               }}/>
+            <p className='valid-error'>{methods.formState.errors.code?.message}</p>
           </Grid>
         </Grid>
         <Grid container spacing={2}>

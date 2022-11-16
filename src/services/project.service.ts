@@ -1,6 +1,6 @@
 import { ProjectStatus } from 'src/store/enum/Project';
 import { IProjectReq, IProjectSave } from 'src/store/interface/projectInterface';
-import { axiosInstance } from './axiosInstance';
+import { axiosInstance, axiosInstanceAction } from './axiosInstance';
 
 export const getProjects = async (req: IProjectReq) => {
   try {
@@ -27,10 +27,9 @@ export const getEditProject = async (id: number) => {
 
 export const saveProject = async (data: IProjectSave) => {
   try {
-    const res = await axiosInstance.post('api/services/app/Project/Save', data);
+    const res = await axiosInstanceAction.post('api/services/app/Project/Save', data);
     return res;
   } catch (error) {
-    throw Error(String(error));
   }
 };
 
@@ -45,8 +44,8 @@ export const getQuantityProject = async () => {
 
 export const deleteProject = async (id: number) => {
   try {
-    await axiosInstance.delete('api/services/app/Project/Delete', { params: { Id: id } });
-    return id;
+    const res = await axiosInstanceAction.delete('api/services/app/Project/Delete', { params: { Id: id } });
+    return res;
   } catch (error) {
     throw Error(String(error));
   }
@@ -54,7 +53,7 @@ export const deleteProject = async (id: number) => {
 
 export const activeProjects = async (id: number) => {
   try {
-    await axiosInstance.post('api/services/app/Project/Active', { id });
+    await axiosInstanceAction.post('api/services/app/Project/Active', { id });
     return { id };
   } catch (error) {
     throw new Error(String(error));
@@ -63,7 +62,7 @@ export const activeProjects = async (id: number) => {
 
 export const inactiveProjects = async (id: number) => {
   try {
-    await axiosInstance.post('api/services/app/Project/Inactive', { id });
+    await axiosInstanceAction.post('api/services/app/Project/Inactive', { id });
     return { id };
   } catch (error) {
     throw new Error(String(error));

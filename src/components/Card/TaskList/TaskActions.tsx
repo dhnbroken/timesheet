@@ -9,9 +9,8 @@ import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'sweetalert2/src/sweetalert2.scss';
 import { GlobalContextProvider } from 'src/Context/GlobalContext';
 import { IProject } from 'src/store/interface/projectInterface';
-import { ITimeSheetReq } from 'src/store/interface/TimeSheet';
 import { ProjectStatus } from 'src/store/enum/Project';
-import moment from 'moment';
+import { swalOption } from 'src/store/swal';
 
 const cx = classNames.bind(styles);
 
@@ -50,10 +49,7 @@ interface Props {
 const TaskActions: React.FC<Props> = (props) => {
   const { project } = props;
   const {
-    state, setProjectInfo, getMemberProject, getTasks,
-    getEditTask, getTimeSheetTasks, getTimeSheetTeams,
-    setTitle, deleteTask, startDate, endDate,
-    activeProject, inactiveProject
+    setProjectInfo, getEditTask, setTitle, deleteTask, activeProject, inactiveProject
   } = useContext(GlobalContextProvider);
 
   const [menuActions, setMenuActions] = useState<null | HTMLElement>(null);
@@ -65,12 +61,7 @@ const TaskActions: React.FC<Props> = (props) => {
   const open = Boolean(menuActions);
 
   const handleOpenEdit = async (id: number) => {
-    const currentProject = state.projects.find(t => t.id === id);
-    if (currentProject) {
-      await getEditTask(id);
-    }
-    getMemberProject();
-    getTasks();
+    await getEditTask(id);
     setModalChildren('Edit');
     setOpenEdit(true);
     handleCloseActions();
@@ -78,17 +69,7 @@ const TaskActions: React.FC<Props> = (props) => {
   };
 
   const handleOpenView = async (id: number) => {
-    const currentProject = state.projects.find(t => t.id === id);
-    if (currentProject) {
-      await getEditTask(id);
-      const req: ITimeSheetReq = {
-        projectId: currentProject.id,
-        startDate: moment(startDate).format('YYYY-MM-DD'),
-        endDate: moment(endDate).format('YYYY-MM-DD')
-      };
-      getTimeSheetTasks(req);
-      getTimeSheetTeams(req);
-    }
+    await getEditTask(id);
     setModalChildren('View');
     setOpenView(true);
     handleCloseActions();
@@ -106,19 +87,9 @@ const TaskActions: React.FC<Props> = (props) => {
     Swal.fire({
       title: 'Are you sure?',
       text: `${warning} project: ${project.name}?`,
-      icon: 'warning',
-      reverseButtons: true,
-      showCancelButton: true,
-      confirmButtonColor: '#7cd1f9',
-      cancelButtonColor: '#efefef',
-      confirmButtonText: 'Yes'
+      ...swalOption
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire(
-          `${warning}!`,
-          `Your file has been ${warning}!.`,
-          'success'
-        );
         project.status === ProjectStatus.ACTIVE ? inactiveProject(project.id) : activeProject(project.id);
       }
     });
@@ -128,19 +99,9 @@ const TaskActions: React.FC<Props> = (props) => {
     Swal.fire({
       title: 'Are you sure?',
       text: `Delete project: ${project.name}?`,
-      icon: 'warning',
-      reverseButtons: true,
-      showCancelButton: true,
-      confirmButtonColor: '#7cd1f9',
-      cancelButtonColor: '#efefef',
-      confirmButtonText: 'Yes'
+      ...swalOption
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire(
-          'Deleted!',
-          'Your file has been Delete!.',
-          'success'
-        );
         deleteTask(project.id);
       }
     });

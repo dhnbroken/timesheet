@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { NavigateFunction, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { GlobalStoreContext } from './Context/GlobalContext';
 import ProjectRoute from './routes/ProjectRoute';
 
 function App (): JSX.Element {
-  const navigate: NavigateFunction = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!localStorage.getItem('user')) {

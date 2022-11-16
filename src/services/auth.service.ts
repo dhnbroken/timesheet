@@ -15,7 +15,3 @@ export const login = async ({ userNameOrEmailAddress, password, rememberClient }
       return res.data;
     });
 };
-
-export const logout = () => {
-  localStorage.removeItem('user');
-};

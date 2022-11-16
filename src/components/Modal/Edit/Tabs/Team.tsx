@@ -40,17 +40,11 @@ const Team: React.FC = () => {
       user.type = UserType.PROJECTMANAGER;
     }
     setTeamMember([...teamMember, user]);
-    !editInfo.users.length
-      ? editInfo.users.push({
-        userId: user.id,
-        type: UserType.PROJECTMANAGER
-      })
-      : editInfo.users.push({
-        userId: user.id,
-        type: UserType.MEMBER
-      });
+    editInfo.users.push({
+      userId: user.id,
+      type: user.type
+    });
   };
-
   const handleUnselectMember = (user: IUser) => {
     const index = teamMember.findIndex(team => team.id === user.id);
     teamMember.splice(index, 1);
@@ -61,12 +55,11 @@ const Team: React.FC = () => {
   const [showDeactive, setShowDeactive] = useState(false);
 
   const activeFilter = teamMember.filter((user) => user.type !== UserType.DEACTIVE);
-
   return (
     <React.Fragment>
       <Box sx={{ flexGrow: 1 }}>
-        <Grid container spacing={1}>
-          <Grid item xs={6}>
+        <Grid container spacing={2}>
+          <Grid item lg={7} md={12}>
             <Table className='expansion-panel' aria-label="team table">
               <Accordion >
                 <AccordionSummary
@@ -129,7 +122,7 @@ const Team: React.FC = () => {
               </Accordion>
             </Table>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item lg={5} md={12}>
             <Table className='expansion-panel' sx={{ ml: '8px' }} aria-label="member table">
               <Accordion >
                 <AccordionSummary
